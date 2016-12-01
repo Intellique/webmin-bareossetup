@@ -35,13 +35,18 @@ if ($in{add}) {
 ###########################
 &ui_print_header(undef, "Bare OS Client", "", "intro", 1, 1, 0, "");
 
-print Dumper \%config;
-
 my $err = &check_config();
 if ($err) {
         &ui_print_endpage(
                 $err." ". &text('no configuration found', "../config.cgi?$module_name"));
         }
+
+my $clients = list_clients();
+
+print '<pre>';
+print Dumper $clients;
+print '</pre>';
+
 
 &ui_print_footer('/', "index");
 
@@ -59,10 +64,11 @@ sub check_config {
 
 # list clients from config file
 sub list_clients {
-	open(my $fh, '<', $config{config_file}) or die "can't open config file";
+	open(my $fh, '<', $config{config_file}) or die "can't open config file " . $config{config_file};
 
 	my @clients;
 	my $next;	
+	print '<pre>';
 	while (<$fh>){
 		next if m/^\n/;
 		next if m/^\s*#/;
@@ -74,9 +80,7 @@ sub list_clients {
 			push @clients, $1;
 			$next=0;
 		}
-		
-	my %clients = map { $_ => 1 } @clients;
-	
-	return \%clients;
 	}
+	my %clients = map { $_ => 1 } @clients;
+	return \%clients;
 }
