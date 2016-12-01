@@ -11,27 +11,10 @@ our (%text, %config, $module_name);
 use WebminCore;
 
 &init_config();
-
-
-if ($in{add}) {
-	$in{host} !~ m/[\w+|\.|\-]+/ ? die : undef ;
-	$in{password} !~ m/[\w+|\/|\+]+/ ? die : undef ;
-	my $name =  $in{host} . '-fd';
-	
-	my $err = check_config();
-	die if ($err);	
-
-	my $clients=list_clients();
-	if ($clients->{$in{host}}){
-		die "client already exists!";
-	}
-	
-	open(my $fh, '>>', $config{config_file}) or die;
-	
-}
+&ReadParse();
 
 ###########################
-# display page (unused)
+# head
 ###########################
 &ui_print_header(undef, "Bare OS Client", "", "intro", 1, 1, 0, "");
 
@@ -41,9 +24,32 @@ if ($err) {
                 $err." ". &text('no configuration found', "../config.cgi?$module_name"));
         }
 
+
+###########################
+# add client
+###########################
+if ($in{add}) {
+	$in{host} !~ m/[\w+|\.|\-]+/ ? exit_error('host') : undef ;
+	$in{password} !~ m/[\w+|\/|\+]+/ ? exit_error('password') : undef ;
+	my $name =  $in{host} . '-fd';
+	
+	my $clients=list_clients();
+	if ($clients->{$in{host}}){
+		exit_error('client');
+	}
+	
+	open(my $fh, '>>', $config{config_file}) or exit_error('write');
+	
+}
+
+###########################
+# main page
+###########################
+
 my $clients = list_clients();
 
 print '<pre>';
+print Dumper \%in;
 print Dumper $clients;
 print '</pre>';
 
@@ -64,7 +70,8 @@ sub check_config {
 
 # list clients from config file
 sub list_clients {
-	open(my $fh, '<', $config{config_file}) or die "can't open config file " . $config{config_file};
+	open(my $fh, '<', $config{config_file}) 
+		or die "can't open config file " . $config{config_file};
 
 	my @clients;
 	my $next;	
@@ -83,4 +90,17 @@ sub list_clients {
 	}
 	my %clients = map { $_ => 1 } @clients;
 	return \%clients;
+}
+
+sub exit_error {
+	my $message = { 'host' => "il faut un nom d'hôte",
+					'password' => "il faut un mot de passe",
+					'config' => "fichier de configuration non trouvé",
+					'client' => 'client déjà présent',
+					'write' => "impossible d'écrire le fichier de configuration",
+				};
+				
+	print "Erreur: " . $message->{$_[0]};
+	&ui_print_footer('/', "index");
+	exit;	
 }
