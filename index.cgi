@@ -31,6 +31,7 @@ if ($err) {
 if ($in{add}) {
 	$in{host} !~ m/[\w+|\.|\-]+/ ? exit_error('host') : undef ;
 	$in{password} !~ m/[\w+|\/|\+]+/ ? exit_error('password') : undef ;
+	$in{os} =~ m/windows|linux/ ? exit_error('os') : undef;
 	my $name =  $in{host} . '-fd';
 	
 	my $clients=list_clients();
@@ -51,6 +52,27 @@ if ($in{add}) {
   Job Retention = 6 months
 }
 );
+	my $fileset="Linux-Base";
+
+	if ( $in{os} eq 'windows' ) {
+		$fileset='Windows-Base';
+	}
+	
+	print $fh qq(Job {
+	  Name = "Backup $in{host}"
+  JobDefs = DefaultJob
+  Type = Backup
+  Level = Incremental
+  Client = $in{host}-fd
+  FileSet = $fileset
+  Schedule = Default-Full_Inc
+  Storage = File
+  Pool = Scratch
+  Messages = Standard
+
+}
+);
+	
 	close $fh;
 	print "Hôte ajouté.";
 	&ui_print_footer('/', "index");
@@ -113,6 +135,7 @@ sub exit_error {
 					'config' => "fichier de configuration non trouvé",
 					'client' => 'Le client est déjà configuré',
 					'write' => "impossible d'écrire le fichier de configuration",
+					'os' => "OS non défini",
 				};
 				
 	print "Erreur: " . $message->{$_[0]};
