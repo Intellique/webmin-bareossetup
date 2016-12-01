@@ -38,8 +38,23 @@ if ($in{add}) {
 		exit_error('client');
 	}
 	
-	open(my $fh, '>>', $config{config_file}) or exit_error('write');
-	
+	open(my $fh, '>>', $config{config_file}) 
+		or exit_error('write');
+
+	print $fh qq(Client {
+  Name = $in{host}-fd
+  Password = $in{password}
+  Address = $in{host}
+  FDPort = 9102
+  Catalog = MyCatalog
+  File Retention = 30 days
+  Job Retention = 6 months
+}
+);
+	close $fh;
+	print "Hôte ajouté.";
+	&ui_print_footer('/', "index");
+	exit;
 }
 
 ###########################
@@ -96,7 +111,7 @@ sub exit_error {
 	my $message = { 'host' => "il faut un nom d'hôte",
 					'password' => "il faut un mot de passe",
 					'config' => "fichier de configuration non trouvé",
-					'client' => 'client déjà présent',
+					'client' => 'Le client est déjà configuré',
 					'write' => "impossible d'écrire le fichier de configuration",
 				};
 				
@@ -104,3 +119,5 @@ sub exit_error {
 	&ui_print_footer('/', "index");
 	exit;	
 }
+
+
