@@ -1,0 +1,4 @@
+risk=low
+desc=Add BareOS clients
+longdesc=Add New BareOS clients Automatically
+version=1.810
