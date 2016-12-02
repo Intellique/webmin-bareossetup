@@ -1,0 +1,78 @@
+#!/bin/bash
+# serveur
+SERVER="vjstore"
+
+# chemin config
+# Bareos v15.x
+# CONFIG="/etc/bareos/bareos-fd.conf"
+# Bareos v16.x
+CONFIG="/etc/bareos/bareos-fd.d/director/bareos-dir.conf"
+
+# vérifie que lsb_release est installé
+lsb_release -d > /dev/null 2>&1 || { echo "lsb_release manquant" ; exit 127; }
+
+# Debian ou Centos?
+RELEASE=$(lsb_release -d);
+
+# dépôt bareos
+case "$RELEASE" in 
+	*Debian*" 7."*)
+	URL=http://download.bareos.org/bareos/release/latest/Debian_7.0/
+	PACKSYS="deb"	
+	;;
+	*Debian*" 8."*)
+	URL=http://download.bareos.org/bareos/release/latest/Debian_8.0/
+	PACKSYS="deb"
+	;;
+	*Ubuntu*" 14."*)
+	URL=http://download.bareos.org/bareos/release/latest/xUbuntu_14.04/
+	PACKSYS="deb"
+	;;
+	*Ubuntu*" 16."*)
+	URL=http://download.bareos.org/bareos/release/latest/xUbuntu_16.04/
+	PACKSYS="deb"
+	;;
+	*CentOS*" 6."*)
+	URL=http://download.bareos.org/bareos/release/latest/CentOS_6/
+	PACKSYS="yum"
+	;;
+	*CentOS*" 7."*)
+	URL=http://download.bareos.org/bareos/release/latest/CentOS_7/
+	PACKSYS="yum"
+	;;
+	*)
+	URL="NOT FOUND"
+	PACKSYS="unknown"
+	;;
+esac
+
+# installation du client depuis le repo officiel bareos
+if [ $PACKSYS = "deb" ] ; then
+	printf "deb $URL /\n" > /etc/apt/sources.list.d/bareos.list
+	wget -q $URL/Release.key -O- | apt-key add -
+	apt-get update && apt-get install -qq bareos-filedaemon
+elif [ $PACKSYS = "yum" ] ; then
+	wget -O /etc/yum.repos.d/bareos.repo $URL/bareos.repo 
+ 	yum install bareos-filedaemon
+else
+	echo "Distribution inconnue, sortie."
+	exit 1
+fi
+
+# modifier le director (serveur) dans la config
+# Bareos v15.x
+sed -i "s/$HOSTNAME-dir/$SERVER-dir/" $CONFIG
+
+# Bareos v16.x
+sed -i "s/bareos-dir/$SERVER-dir/" $CONFIG
+
+
+# récupérer le mot de passe: 
+# attention, ne marche que si l'ordre est inchangé depuis l'installation
+PASSWORD=$(grep -i -e "Password\s*=" $CONFIG | head -n 1 | perl -ne 'm/Password\s*=\s*"(.*)"/; print $1')
+
+# transmettre la config au serveur : hostname, password
+curl -k --data-urlencode "add=1" --data-urlencode "os=linux" --data-urlencode "host=$HOSTNAME"  --data-urlencode "password=$PASSWORD" https://$SERVER:10000/bareossetup/index.cgi
+
+# redémarrer le FD pour prendre en compte la config modifiée
+service bareos-fd restart
