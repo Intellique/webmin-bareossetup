@@ -14,7 +14,7 @@ use WebminCore;
 &ReadParse();
 
 ###########################
-# head
+# display head
 ###########################
 &ui_print_header(undef, "Bare OS Client", "", "intro", 1, 1, 0, "");
 
@@ -73,6 +73,9 @@ if ($in{add}) {
 }
 );
 	
+	my $bcout = qx(bconsole reload)
+		or print "<strong>Reload configuration failed</strong>";
+	
 	close $fh;
 	print "Hôte ajouté.";
 	&ui_print_footer('/', "index");
@@ -85,10 +88,10 @@ if ($in{add}) {
 
 my $clients = list_clients();
 
-print '<pre>';
-print Dumper \%in;
-print Dumper $clients;
-print '</pre>';
+# print '<pre>';
+# print Dumper \%in;
+# print Dumper $clients;
+# print '</pre>';
 
 
 &ui_print_footer('/', "index");
