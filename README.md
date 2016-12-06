@@ -20,7 +20,7 @@ Exportez le dépôt dans un fichier tar (à tester):
   
 Dans Webmin, section *Webmin*, *Modules*, choisissez *Installer un module depuis un fichier local*, choisissez le fichier *bareossetup.wbm*.
 
-** Configuration de Webmin **
+**Configuration de Webmin**
 
 Créez un utilisateur *bareos* n'ayant accès qu'au module *bareossetup*.
 Dans la section *Webmin* -> *Accès anonyme aux modules*, ajoutez le chemin */bareossetup/* et choisissez d'accéder en tant qu'utilisateur *bareos*.
@@ -30,7 +30,7 @@ Vérifiez que vous accédez bien au module en pointant un navigateur vers
 
 Il ne doit pas être demandé de mot de passe.
 
-** Utilisation du module **
+**Utilisation du module**
 
  * depuis un poste Linux:
  
