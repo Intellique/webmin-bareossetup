@@ -31,7 +31,7 @@ if ($err) {
 if ($in{add}) {
 	$in{host} !~ m/[\w+|\.|\-]+/ ? exit_error('host') : undef ;
 	$in{password} !~ m/[\w+|\/|\+]+/ ? exit_error('password') : undef ;
-	$in{os} =~ m/windows|linux/ ? exit_error('os') : undef;
+	$in{os} !~ m/windows|linux/ ? exit_error('os') : undef;
 	my $name =  $in{host} . '-fd';
 	
 	my $clients=list_clients();
@@ -54,7 +54,7 @@ if ($in{add}) {
 );
 	my $fileset="Linux-Base";
 
-	if ( $in{os} eq 'windows' ) {
+	if ( $in{os} == 'windows' ) {
 		$fileset='Windows-Base';
 	}
 	
