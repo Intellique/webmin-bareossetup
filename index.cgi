@@ -48,8 +48,8 @@ if ($in{add}) {
   Address = $in{host}
   FDPort = 9102
   Catalog = MyCatalog
-  File Retention = 30 days
-  Job Retention = 6 months
+  File Retention = 366 days
+  Job Retention = 366 days
 }
 );
 	my $fileset='Linux-Base';
