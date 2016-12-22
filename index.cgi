@@ -52,32 +52,42 @@ if ($in{add}) {
   Job Retention = 6 months
 }
 );
-	my $fileset="Linux-Base";
+	my $fileset='Linux-Base';
 
-	if ( $in{os} == 'windows' ) {
+	if ( $in{os} eq 'windows' ) {
 		$fileset='Windows-Base';
 	}
 	
 	print $fh qq(Job {
-	  Name = "Backup $in{host}"
+	  Name = "$in{host}-Full"
+  JobDefs = DefaultJob
+  Type = Backup
+  Level = Full
+  Client = $in{host}-fd
+  FileSet = $fileset
+  Schedule = Full_Inc
+  Storage = File
+  Pool = Full
+  Messages = Standard
+}
+Job {
+	  Name = "$in{host}-Inc"
   JobDefs = DefaultJob
   Type = Backup
   Level = Incremental
   Client = $in{host}-fd
   FileSet = $fileset
-  Schedule = Default-Full_Inc
+  Schedule = Full_Inc
   Storage = File
-  Pool = Scratch
+  Pool = Incremental
   Messages = Standard
-
 }
-);
-	
-	my $bcout = qx(bconsole reload)
+);	
+	close $fh;
+	my $bcout = qx(echo reload | /usr/bin/bconsole)
 		or print "<strong>Reload configuration failed</strong>";
 	
-	close $fh;
-	print "Hôte ajouté.";
+	print "\nHôte ajouté.\n";
 	&ui_print_footer('/', "index");
 	exit;
 }
