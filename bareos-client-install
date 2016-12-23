@@ -72,7 +72,7 @@ sed -i "s/bareos-dir/$SERVER-dir/" $CONFIG
 PASSWORD=$(grep -i -e "Password\s*=" $CONFIG | head -n 1 | perl -ne 'm/Password\s*=\s*"(.*)"/; print $1')
 
 # transmettre la config au serveur : hostname, password
-curl -k --data-urlencode "add=1" --data-urlencode "os=linux" --data-urlencode "os=linux" --data-urlencode "host=$HOSTNAME"  --data-urlencode "password=$PASSWORD" https://$SERVER:10000/bareossetup/index.cgi
+curl -k --data-urlencode "add=1" --data-urlencode "os=linux" --data-urlencode "host=$HOSTNAME"  --data-urlencode "password=$PASSWORD" https://$SERVER:10000/bareossetup/index.cgi
 
 # redémarrer le FD pour prendre en compte la config modifiée
 service bareos-fd restart
