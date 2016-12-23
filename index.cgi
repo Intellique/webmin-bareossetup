@@ -14,7 +14,7 @@ use WebminCore;
 &ReadParse();
 
 ###########################
-# head
+# display head
 ###########################
 &ui_print_header(undef, "Bare OS Client", "", "intro", 1, 1, 0, "");
 
@@ -48,33 +48,46 @@ if ($in{add}) {
   Address = $in{host}
   FDPort = 9102
   Catalog = MyCatalog
-  File Retention = 30 days
-  Job Retention = 6 months
+  File Retention = 366 days
+  Job Retention = 366 days
 }
 );
-	my $fileset="Linux-Base";
+	my $fileset='Linux-Base';
 
-	if ( $in{os} == 'windows' ) {
+	if ( $in{os} eq 'windows' ) {
 		$fileset='Windows-Base';
 	}
 	
 	print $fh qq(Job {
-	  Name = "Backup $in{host}"
+	  Name = "$in{host}-Full"
+  JobDefs = DefaultJob
+  Type = Backup
+  Level = Full
+  Client = $in{host}-fd
+  FileSet = $fileset
+  Schedule = Full_Inc
+  Storage = File
+  Pool = Full
+  Messages = Standard
+}
+Job {
+	  Name = "$in{host}-Inc"
   JobDefs = DefaultJob
   Type = Backup
   Level = Incremental
   Client = $in{host}-fd
   FileSet = $fileset
-  Schedule = Default-Full_Inc
+  Schedule = Full_Inc
   Storage = File
-  Pool = Scratch
+  Pool = Incremental
   Messages = Standard
-
 }
-);
-	
+);	
 	close $fh;
-	print "Hôte ajouté.";
+	my $bcout = qx(echo reload | /usr/bin/bconsole)
+		or print "<strong>Reload configuration failed</strong>";
+	
+	print "\nHôte ajouté.\n";
 	&ui_print_footer('/', "index");
 	exit;
 }
@@ -85,10 +98,10 @@ if ($in{add}) {
 
 my $clients = list_clients();
 
-print '<pre>';
-print Dumper \%in;
-print Dumper $clients;
-print '</pre>';
+# print '<pre>';
+# print Dumper \%in;
+# print Dumper $clients;
+# print '</pre>';
 
 
 &ui_print_footer('/', "index");
