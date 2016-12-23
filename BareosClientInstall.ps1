@@ -1,5 +1,7 @@
 ﻿[CmdletBinding()]
-param ()
+param (
+    [boolean] $force = $false
+)
 . "\\villejuif.fr\netlogon\powershell\framework.ps1"
 
 Write_Title -text "Script d'installation et d'inscription du client Bareos sur les serveurs"
@@ -26,6 +28,12 @@ Function Get-DirectorPassword
 {
     param()
     return ((Get-Content $bareosConfFile  | Select-String -Pattern "Password").ToString().split("=")[1].Split('"')[1])
+}
+
+Function Set-DirectorName
+{
+    param()
+    ((Get-Content $bareosConfFile) -replace "bareos","vjstore") | Out-File -FilePath $bareosConfFile -Force -Encoding utf8
 }
 
 Function Is-BareosInstalled
@@ -82,7 +90,7 @@ Function Set-AttentedCertificatePolicy
 #################################################################################################################
 ### Procédure du script
 #################################################################################################################
-If(!(Is-BareosInstalled)){
+If(!(Is-BareosInstalled) -or ($force -eq $true)){
     Install-Bareos
 
     # application d'une politique de certificat libertaire pour le webservice
@@ -90,10 +98,12 @@ If(!(Is-BareosInstalled)){
         Set-AttentedCertificatePolicy
     }
 
+    Set-DirectorName
     $directorPassword  = Get-DirectorPassword
     $urlData.Add("password", $directorPassword)
     Registrate-ClientOnServer
 
     Write_Info -text "Redémarrage du service Bareos-FD"
-    Restart-Service "Bareos-fd" -Force
+    Stop-Service "Bareos-fd" -Force
+    Start-Service "Bareos-fd"
 }
