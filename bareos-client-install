@@ -50,10 +50,10 @@ esac
 if [ $PACKSYS = "deb" ] ; then
 	printf "deb $URL /\n" > /etc/apt/sources.list.d/bareos.list
 	wget -q $URL/Release.key -O- | apt-key add -
-	apt-get update && apt-get install -qq bareos-filedaemon
+	apt-get update && apt-get install -qq bareos-filedaemon curl
 elif [ $PACKSYS = "yum" ] ; then
 	wget -O /etc/yum.repos.d/bareos.repo $URL/bareos.repo 
- 	yum install bareos-filedaemon
+ 	yum install bareos-filedaemon curl
 else
 	echo "Distribution inconnue, sortie."
 	exit 1
